@@ -70,6 +70,7 @@ jobs:
             -Dsonar.exclusions=**/*.spec.ts,**/node_modules/**,**/*.config.js
             -Dsonar.tests=src
             -Dsonar.test.inclusions=**/*.spec.ts
+            -Dsonar.javascript.lcov.reportPaths=coverage/angular.io-example/lcov.info
 
       - name: Build Angular App
         run: npm run build -- --configuration production
