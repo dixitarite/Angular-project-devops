@@ -1,0 +1,66 @@
+name: "Test and build Angular app"
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    name: Test and Build Angular App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests and Generate Coverage Report
+        run: |
+          mkdir -p test-results
+          npx ng test --watch=false --browsers=ChromeHeadless --code-coverage --karma-config=karma.conf.js || true
+          cp coverage/*/lcov-report/index.html test-results/test-report.html
+
+      - name: Enforce Code Coverage Threshold
+        run: |
+          COVERAGE_FILE=$(find ./coverage -name 'coverage-summary.json' | head -n 1)
+          echo "Using coverage file: $COVERAGE_FILE"
+          COVERAGE=$(node -p "require('$COVERAGE_FILE').total.statements.pct")
+          echo "Statements Coverage: $COVERAGE%"
+          THRESHOLD=75
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "Code coverage is below the required $THRESHOLD% threshold."
+            exit 1
+          else
+            echo "Code coverage is acceptable."
+          fi
+
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Angular-Test-Report
+          path: test-results/test-report.html
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Angular-Coverage-Report
+          path: coverage/
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Build Angular App
+        run: npm run build -- --configuration production
