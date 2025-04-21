@@ -61,6 +61,15 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=angular-devops_angular-devops
+            -Dsonar.organization=angular-devops
+            -Dsonar.branch.name=main
+            -Dsonar.sources=src
+            -Dsonar.exclusions=**/*.spec.ts,**/node_modules/**,**/*.config.js
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.spec.ts
 
       - name: Build Angular App
         run: npm run build -- --configuration production
