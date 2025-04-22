@@ -63,8 +63,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=angular-devops_angular-devops
-            -Dsonar.organization=angular-devops
+            -Dsonar.projectKey=dixitarite_Angular-project-devops
+            -Dsonar.organization=dixitarite
             -Dsonar.branch.name=main
             -Dsonar.sources=src
             -Dsonar.exclusions=**/*.spec.ts,**/node_modules/**,**/*.config.js
