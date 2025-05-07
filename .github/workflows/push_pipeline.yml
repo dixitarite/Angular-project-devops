@@ -46,7 +46,6 @@ jobs:
         run: |
           REPORT="./test-results/test-results.xml"
           echo "Parsing $REPORT for failed CRITICAL tests..."
-
           if [[ -f "$REPORT" ]]; then
             FAILED_CRITICAL=$(awk '/<testcase/ {test=$0} /<failure/ {if (test ~ /\[CRITICAL\]/) print test}' "$REPORT" | wc -l)
             if [[ "$FAILED_CRITICAL" -gt 0 ]]; then
@@ -116,14 +115,11 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # Remove invalid Codacy CLI step and replace with Coverage Reporter
-      - name: Install Codacy Coverage Reporter
-        run: |
-          bash <(curl -Ls https://coverage.codacy.com/get.sh)
-
       - name: Upload Coverage to Codacy
         run: |
-          codacy-coverage-reporter \
+          curl -Ls https://coverage.codacy.com/get.sh > codacy-coverage-reporter
+          chmod +x codacy-coverage-reporter
+          ./codacy-coverage-reporter report \
             --project-token="${{ secrets.CODACY_PROJECT_TOKEN }}" \
             --coverage-reports="coverage/angular.io-example/coverage/lcov.info"
 
