@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HeroesComponent } from './heroes.component';
 import { HEROES } from '../mock-heroes';
-import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
+//import { By } from '@angular/platform-browser';
+//import { DebugElement } from '@angular/core';
 
 describe('HeroesComponent', () => {
   let component: HeroesComponent;
