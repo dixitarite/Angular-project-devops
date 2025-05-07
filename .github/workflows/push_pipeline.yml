@@ -116,17 +116,12 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Clean Uncommitted Files for Codacy
-        run: |
-          echo "Removing untracked files to avoid Codacy CLI errors..."
-          rm -rf coverage test-results
-
       - name: Codacy Analysis CLI
         uses: codacy/codacy-analysis-cli-action@v4
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           upload: true
-          directory: coverage/angular.io-example/coverage/lcov.info
+          directory: ${{ github.workspace }}/coverage/angular.io-example/coverage/lcov.info
 
       - name: Build Angular App
         run: npm run build -- --configuration production
