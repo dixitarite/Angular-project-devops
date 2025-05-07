@@ -126,7 +126,7 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           upload: true
-          coverage-reports: coverage/angular.io-example/coverage/lcov.info
+          directory: coverage/angular.io-example/coverage/lcov.info
 
       - name: Build Angular App
         run: npm run build -- --configuration production
