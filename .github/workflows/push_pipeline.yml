@@ -116,12 +116,16 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Codacy Analysis CLI
-        uses: codacy/codacy-analysis-cli-action@v4
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          upload: true
-          directory: ${{ github.workspace }}/coverage/angular.io-example/coverage/lcov.info
+      # Remove invalid Codacy CLI step and replace with Coverage Reporter
+      - name: Install Codacy Coverage Reporter
+        run: |
+          bash <(curl -Ls https://coverage.codacy.com/get.sh)
+
+      - name: Upload Coverage to Codacy
+        run: |
+          codacy-coverage-reporter \
+            --project-token="${{ secrets.CODACY_PROJECT_TOKEN }}" \
+            --coverage-reports="coverage/angular.io-example/coverage/lcov.info"
 
       - name: Build Angular App
         run: npm run build -- --configuration production
