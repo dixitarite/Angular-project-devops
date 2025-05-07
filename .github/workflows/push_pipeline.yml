@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Test and Build Angular App
+    name: Test, Lint, and Build Angular App
     runs-on: ubuntu-latest
 
     steps:
@@ -22,6 +22,10 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
+
+      - name: Lint Code with ESLint
+        run: |
+          npx eslint . --ext .ts --max-warnings=0
 
       - name: Run Tests and Generate Coverage
         run: |
@@ -111,6 +115,13 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Codacy Analysis CLI
+        uses: codacy/codacy-analysis-cli-action@v4
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          upload: true
+          coverage-reports: coverage/angular.io-example/coverage/lcov.info
 
       - name: Build Angular App
         run: npm run build -- --configuration production
