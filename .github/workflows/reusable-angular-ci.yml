@@ -6,11 +6,9 @@ on:
       node_version:
         required: false
         type: string
-        default: '18'
       coverage_threshold:
         required: false
         type: number
-        default: 75
       project_path:
         required: false
         type: string
@@ -27,6 +25,10 @@ jobs:
     name: Test, Lint, and Build Angular App
     runs-on: ubuntu-latest
 
+    env:
+      NODE_VERSION: ${{ inputs.node_version || vars.NODE_VERSION }}
+      COVERAGE_THRESHOLD: ${{ inputs.coverage_threshold || vars.COVERAGE_THRESHOLD }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -34,7 +36,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ inputs.node_version }}
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install Dependencies
         run: npm install
@@ -101,7 +103,7 @@ jobs:
           echo "Using coverage file: $COVERAGE_FILE"
           COVERAGE=$(node -p "require('./$COVERAGE_FILE').total.statements.pct")
           echo "Statements Coverage: $COVERAGE%"
-          THRESHOLD=${{ inputs.coverage_threshold }}
+          THRESHOLD=$COVERAGE_THRESHOLD
           if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
             echo "Code coverage is below required $THRESHOLD% threshold."
             exit 1
