@@ -8,7 +8,7 @@ on:
         type: string
       coverage_threshold:
         required: false
-        type: number
+        type: string
       project_path:
         required: false
         type: string
