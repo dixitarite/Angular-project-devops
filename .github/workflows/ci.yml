@@ -5,7 +5,7 @@ on:
     branches: ['*']
   pull_request:
     branches: ['*']
-
+    
 jobs:
   test_and_build:
     uses: dixitarite/Angular-project-devops/.github/workflows/reusable-angular-ci.yml@main
