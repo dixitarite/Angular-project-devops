@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ['*']
 
+env:
+  NODE_VERSION: ${{ vars.NODE_VERSION }}
+  COVERAGE_THRESHOLD: ${{ vars.COVERAGE_THRESHOLD }}
+
 jobs:
   test_and_build:
     uses: dixitarite/Angular-project-devops/.github/workflows/reusable-angular-ci.yml@main
