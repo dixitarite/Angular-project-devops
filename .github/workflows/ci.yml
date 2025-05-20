@@ -1,0 +1,16 @@
+name: Angular CI Pipeline
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+
+jobs:
+  test_and_build:
+    uses: your-org/your-shared-repo/.github/workflows/reusable-angular-ci.yml@main
+    with:
+      node_version: '18'
+      coverage_threshold: 80
+      project_path: '.'
+    secrets: inherit
