@@ -10,9 +10,12 @@ jobs:
   test_and_build:
     uses: dixitarite/Angular-project-devops/.github/workflows/reusable-angular-ci.yml@main
     with:
-      node_version: ${{ vars.NODE_VERSION }}
-      coverage_threshold: ${{ vars.COVERAGE_THRESHOLD }}
+      node_version: ${{ env.NODE_VERSION }}
+      coverage_threshold: ${{ env.COVERAGE_THRESHOLD }}
       project_path: '.'
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+    env:
+      NODE_VERSION: ${{ vars.NODE_VERSION }}
+      COVERAGE_THRESHOLD: ${{ vars.COVERAGE_THRESHOLD }}
