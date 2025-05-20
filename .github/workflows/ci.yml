@@ -8,9 +8,9 @@ on:
 
 jobs:
   test_and_build:
-    uses: your-org/your-shared-repo/.github/workflows/reusable-angular-ci.yml@main
+    uses: dixitarite/Angular-project-devops/.github/workflows/reusable-angular-ci.yml@main
     with:
-      node_version: '18'
-      coverage_threshold: 80
-      project_path: '.'
+      node-version: '18'             
+      coverage-threshold: 80          
+      project-path: '.'              
     secrets: inherit
