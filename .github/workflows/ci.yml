@@ -11,7 +11,7 @@ jobs:
     uses: dixitarite/Angular-project-devops/.github/workflows/reusable-angular-ci.yml@main
     with:
       node_version: ${{ vars.NODE_VERSION }}
-      coverage_threshold: '${{ vars.COVERAGE_THRESHOLD }}'
+      coverage_threshold: ${{ vars.COVERAGE_THRESHOLD }}
       project_path: '.'
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
