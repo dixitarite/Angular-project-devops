@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy-static-app:
-    uses: dixitarite/Agular-project-devops/.github/workflows/deploy_to_aws.yml@main
+    uses: dixitarite/Angular-project-devops/.github/workflows/deploy_to_aws.yml@main
     with:
       app_dist_path: dist/my-angular-app
       deploy_target: aws
