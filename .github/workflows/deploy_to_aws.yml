@@ -62,18 +62,16 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download build artifacts
+      - name: Download build artifacts to 'app' folder
         uses: actions/download-artifact@v4
         with:
           name: angular-dist
-          path: dist
+          path: app
 
-      - name: Debug – List downloaded dist contents
+      - name: Debug – List downloaded contents
         run: |
-          echo "Downloaded artifact content at dist/"
-          ls -la dist
-          echo "Project dist path: dist/${{ inputs.app_dist_path }}"
-          ls -la dist/${{ inputs.app_dist_path }}
+          echo "Downloaded artifact content at app/"
+          ls -R app
 
       - name: Setup AWS CLI via pip
         run: |
@@ -82,7 +80,7 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 sync dist/${{ inputs.app_dist_path }} s3://${{ secrets.AWS_S3_BUCKET }} --delete
+          aws s3 sync app s3://${{ secrets.AWS_S3_BUCKET }} --delete
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
