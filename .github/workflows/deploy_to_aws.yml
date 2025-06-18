@@ -39,11 +39,16 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install Dependencies
-        run: npm ci
+      - run: npm ci
 
       - name: Build Angular App (Production)
         run: npm run build -- --configuration production
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: angular-dist
+          path: ${{ inputs.app_dist_path }}
 
   deploy-aws:
     name: Deploy to AWS S3 + CloudFront
@@ -51,38 +56,37 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Install AWS CLI (via pip)
-        run: |
-          sudo apt update
-          sudo apt install -y python3-pip
-          pip3 install awscli --upgrade
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: angular-dist
+          path: dist
 
-      - name: Debug – Print Distribution Folder
+      - name: Setup AWS CLI
+        run: sudo apt-get update && sudo apt-get install -y awscli
+
+      - name: Debug – List contents of dist
         run: |
-          echo "Checking contents at path: ${{ inputs.app_dist_path }}"
-          ls -la ${{ inputs.app_dist_path }}
+          echo "Listing files in dist"
+          ls -la dist
 
       - name: Upload to S3
         run: |
-          echo "Uploading to S3 bucket: ${{ secrets.AWS_S3_BUCKET }}"
-          aws s3 sync ${{ inputs.app_dist_path }} s3://${{ secrets.AWS_S3_BUCKET }} --delete
+          echo "Uploading files to S3..."
+          aws s3 sync dist s3://${{ secrets.AWS_S3_BUCKET }} --delete
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Invalidate CloudFront Cache (Optional)
-        if: ${{ inputs.enable_cloudfront_invalidation }}
+      - name: Invalidate CloudFront Cache
+        if: ${{ inputs.enable_cloudfront_invalidation == true && secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
         run: |
-          if [ -n "${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
-            echo "Invalidating CloudFront cache..."
-            aws cloudfront create-invalidation \
-              --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
-              --paths "/*"
-          else
-            echo "CloudFront invalidation skipped: Distribution ID not provided."
-          fi
+          echo "Invalidating CloudFront distribution"
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
