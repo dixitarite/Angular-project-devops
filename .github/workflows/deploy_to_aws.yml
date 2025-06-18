@@ -8,7 +8,7 @@ on:
         type: string
       deploy_target:
         required: true
-        type: string  # Only "aws" supported now
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -19,7 +19,7 @@ on:
       AWS_S3_BUCKET:
         required: true
       AWS_CLOUDFRONT_DISTRIBUTION_ID:
-        required: false  # Optional for cache invalidation
+        required: false
 
 jobs:
   build:
@@ -28,40 +28,42 @@ jobs:
     outputs:
       dist-path: ${{ inputs.app_dist_path }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build Angular app
-        run: npm run build -- --configuration production
+      - run: npm ci
+      - run: npm run build -- --configuration production
 
   deploy-aws:
     name: Deploy to AWS S3 + CloudFront
     if: ${{ inputs.deploy_target == 'aws' }}
     needs: build
     runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload to S3
         run: |
-          aws s3 sync ${{ inputs.app_dist_path }} s3://${{ secrets.AWS_S3_BUCKET }} --delete
+          aws s3 sync ${{ inputs.app_dist_path }} s3://${{ env.AWS_S3_BUCKET }} --delete
 
       - name: Invalidate CloudFront Cache (optional)
-        if: secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID != ''
+        if: env.AWS_CLOUDFRONT_DISTRIBUTION_ID != ''
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --distribution-id ${{ env.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
