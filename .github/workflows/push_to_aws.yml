@@ -1,4 +1,4 @@
-name: Push to AWS Angular App
+name: Deploy Angular App
 
 on:
   push:
@@ -11,6 +11,7 @@ jobs:
     with:
       app_dist_path: dist/angular.io-example
       deploy_target: aws
+      enable_cloudfront_invalidation: true
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
