@@ -8,7 +8,7 @@ on:
         type: string
       deploy_target:
         required: true
-        type: string
+        type: string  # only 'aws' is supported
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -19,7 +19,7 @@ on:
       AWS_S3_BUCKET:
         required: true
       AWS_CLOUDFRONT_DISTRIBUTION_ID:
-        required: false
+        required: false  # Optional for cache invalidation
 
 jobs:
   build:
@@ -36,34 +36,38 @@ jobs:
           node-version: '18'
 
       - run: npm ci
-      - run: npm run build -- --configuration production
+
+      - name: Build Angular App (Production)
+        run: npm run build -- --configuration production
 
   deploy-aws:
     name: Deploy to AWS S3 + CloudFront
     if: ${{ inputs.deploy_target == 'aws' }}
     needs: build
     runs-on: ubuntu-latest
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-      AWS_CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
     steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+      - name: Setup AWS CLI
+        run: sudo apt-get update && sudo apt-get install -y awscli
+
+      - name: Debug – List contents of dist path
+        run: ls -la ${{ inputs.app_dist_path }}
 
       - name: Upload to S3
         run: |
-          aws s3 sync ${{ inputs.app_dist_path }} s3://${{ env.AWS_S3_BUCKET }} --delete
+          aws s3 sync ${{ inputs.app_dist_path }} s3://${{ secrets.AWS_S3_BUCKET }} --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Invalidate CloudFront Cache (optional)
-        if: env.AWS_CLOUDFRONT_DISTRIBUTION_ID != ''
+      - name: Invalidate CloudFront Cache
+        if: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID && secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID != '' }}
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id ${{ env.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
