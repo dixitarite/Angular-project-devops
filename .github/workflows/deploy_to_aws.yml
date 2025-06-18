@@ -8,7 +8,11 @@ on:
         type: string
       deploy_target:
         required: true
-        type: string  # only 'aws' is supported
+        type: string
+      enable_cloudfront_invalidation:
+        required: false
+        type: boolean
+        default: false
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -19,7 +23,7 @@ on:
       AWS_S3_BUCKET:
         required: true
       AWS_CLOUDFRONT_DISTRIBUTION_ID:
-        required: false  # Optional for cache invalidation
+        required: false
 
 jobs:
   build:
@@ -62,7 +66,7 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Invalidate CloudFront Cache
-        if: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID && secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        if: ${{ inputs.enable_cloudfront_invalidation }}
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
