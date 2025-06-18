@@ -1,0 +1,68 @@
+name: Angular Static Web App Deployment
+
+on:
+  workflow_call:
+    inputs:
+      app_dist_path:
+        required: true
+        type: string
+      deploy_target:
+        required: true
+        type: string  # still required for consistency, but only "aws" is supported now
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_REGION:
+        required: true
+      AWS_S3_BUCKET:
+        required: true
+      AWS_CLOUDFRONT_DISTRIBUTION_ID:
+        required: false  # Optional for cache invalidation
+
+jobs:
+  build:
+    name: Build Angular App
+    runs-on: ubuntu-latest
+    outputs:
+      dist-path: ${{ inputs.app_dist_path }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - run: npm ci
+      - run: npm run build -- --configuration production
+
+  deploy-aws:
+    name: Deploy to AWS S3 + CloudFront
+    if: ${{ inputs.deploy_target == 'aws' }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup AWS CLI
+        run: |
+          sudo apt-get update && sudo apt-get install -y awscli
+
+      - name: Upload to S3
+        run: |
+          aws s3 sync ${{ inputs.app_dist_path }} s3://${{ secrets.AWS_S3_BUCKET }} --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Invalidate CloudFront Cache
+        if: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
