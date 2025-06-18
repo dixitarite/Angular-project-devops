@@ -8,7 +8,7 @@ on:
         type: string
       deploy_target:
         required: true
-        type: string  # still required for consistency, but only "aws" is supported now
+        type: string  # Only "aws" supported now
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -28,15 +28,19 @@ jobs:
     outputs:
       dist-path: ${{ inputs.app_dist_path }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - run: npm ci
-      - run: npm run build -- --configuration production
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Angular app
+        run: npm run build -- --configuration production
 
   deploy-aws:
     name: Deploy to AWS S3 + CloudFront
@@ -56,13 +60,14 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Invalidate CloudFront Cache
-        if: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID != '' }}
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+      - name: Invalidate CloudFront Cache (optional)
+        if: env.CLOUDFRONT_ID != ''
         env:
+          CLOUDFRONT_ID: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_ID \
+            --paths "/*"
