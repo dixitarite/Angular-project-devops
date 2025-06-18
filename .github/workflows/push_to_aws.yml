@@ -9,7 +9,7 @@ jobs:
   deploy-static-app:
     uses: dixitarite/Angular-project-devops/.github/workflows/deploy_to_aws.yml@main
     with:
-      app_dist_path: dist/angular.io-example
+      app_dist_path: dist
       deploy_target: aws
       enable_cloudfront_invalidation: true
     secrets:
