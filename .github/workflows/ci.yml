@@ -8,7 +8,7 @@ on:
 
 jobs:
   test_and_build:
-    uses: dixitarite/shared-github-workflows/.github/workflows/reusable-angular-ci.yml@main
+    uses: dixitarite/shared-github-workflows/.github/workflows/reusable_final.yml@main
     with:
       node_version: ${{ vars.NODE_VERSION }}
       coverage_threshold: ${{ vars.COVERAGE_THRESHOLD }}
