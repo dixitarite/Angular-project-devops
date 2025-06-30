@@ -33,7 +33,7 @@
     "@angular/compiler-cli": "17.2.4",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^16.11.35",
-    "angular-eslint": "^17.0.0",
+    "angular-eslint": "19.3.0",
     "copyfiles": "^2.4.1",
     "eslint": "^9.23.0",
     "@eslint/js": "^9.0.0", 
