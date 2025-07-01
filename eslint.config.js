@@ -1,19 +1,28 @@
 // eslint.config.js
-import eslint from '@eslint/js';
+import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import angular from 'angular-eslint';
 
-export default tseslint.config(
+export default [
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  ...tseslint.configs.stylistic,
+
   {
     files: ['**/*.ts'],
-    extends: [
-      eslint.configs.recommended,
-      ...tseslint.configs.recommended,
-      ...tseslint.configs.stylistic,
-      ...angular.configs.tsRecommended,
-    ],
-    processor: angular.processInlineTemplates,
+    plugins: {
+      '@angular-eslint': angular.plugin,
+    },
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: './tsconfig.json',
+        sourceType: 'module',
+      },
+    },
     rules: {
+      ...angular.configs['recommended'].rules,
+      ...angular.configs['component-max-inline-declarations'].rules,
       '@angular-eslint/directive-selector': [
         'error',
         {
@@ -32,12 +41,18 @@ export default tseslint.config(
       ],
     },
   },
+
   {
     files: ['**/*.html'],
-    extends: [
-      ...angular.configs.templateRecommended,
-      ...angular.configs.templateAccessibility,
-    ],
-    rules: {},
-  }
-);
+    plugins: {
+      '@angular-eslint/template': angular.templatePlugin,
+    },
+    languageOptions: {
+      parser: angular.templateParser,
+    },
+    rules: {
+      ...angular.configs['template-recommended'].rules,
+      ...angular.configs['template-accessibility'].rules,
+    },
+  },
+];
