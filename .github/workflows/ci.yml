@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: ['*']
 
+
 jobs:
   test_and_build:
     uses: Rite-Technologies-23/reusable-repo-flutter/.github/workflows/reusable_angular_ci_pipeline.yml@main
