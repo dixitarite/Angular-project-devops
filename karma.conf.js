@@ -14,7 +14,7 @@ module.exports = function (config) {
       clearContext: false // Leave Jasmine Spec Runner output visible in browser
     },
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/angular.io-example'),
+      dir: require('path').join(__dirname, './coverage'),
       subdir: 'coverage',
       reporters: [
         { type: 'html' },  // Generates ./coverage/angular.io-example/coverage/index.html
