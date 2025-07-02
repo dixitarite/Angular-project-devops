@@ -15,7 +15,7 @@ module.exports = function (config) {
     },
     coverageReporter: {
       dir: require('path').join(__dirname, './coverage'),
-      subdir: 'coverage',
+      subdir: '.',
       reporters: [
         { type: 'html' },  // Generates ./coverage/angular.io-example/coverage/index.html
         { type: 'text-summary' },
