@@ -13,6 +13,5 @@ jobs:
       node_version: ${{ vars.NODE_VERSION }}
       coverage_threshold: ${{ vars.COVERAGE_THRESHOLD }}
       project_path: '.'
-    secrets:  
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
